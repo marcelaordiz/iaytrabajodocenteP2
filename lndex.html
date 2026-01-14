@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La IA ya está en tu trabajo docente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --morado-oscuro: #3d1f4d;
+            --azul: #4a90e2;
+            --verde: #a4c639;
+            --naranja: #ff6b35;
+            --morado-claro: #b565d8;
+            --amarillo: #ffc107;
+            --bg-gris: #f5f5f5;
+        }
+
+        body {
+            font-family: 'Dosis', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gris) 0%, #e8e8e8 100%);
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--morado-oscuro);
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.15rem;
+            color: #666;
+            font-weight: 500;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .game-area {
+            margin-top: 2rem;
+        }
+
+        .cards-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .cards-container h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--morado-oscuro);
+            margin-bottom: 1.5rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: linear-gradient(135deg, var(--azul) 0%, var(--morado-claro) 100%);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 8px;
+            cursor: move;
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+        }
+
+        .columns-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .drop-zone {
+            background: white;
+            border: 3px dashed #ddd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--verde);
+            background: rgba(164, 198, 57, 0.1);
+        }
+
+        .drop-zone h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .drop-zone:nth-child(1) h3 { color: var(--verde); }
+        .drop-zone:nth-child(2) h3 { color: var(--naranja); }
+        .drop-zone:nth-child(3) h3 { color: var(--morado-claro); }
+
+        .dropped-card {
+            background: var(--bg-gris);
+            color: #333;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-left: 4px solid var(--azul);
+            cursor: default;
+        }
+
+        .feedback {
+            background: var(--amarillo);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: var(--verde);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-family: 'Dosis', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .btn.show {
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #93b330;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(164, 198, 57, 0.3);
+        }
+
+        .result {
+            background: linear-gradient(135deg, var(--morado-oscuro) 0%, var(--morado-claro) 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .result p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .result-summary {
+            background: rgba(255,255,255,0.15);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .result-summary h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-summary ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .result-summary li {
+            font-size: 1.1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .result-summary li:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .columns-container {
+                grid-template-columns: 1fr;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>La IA ya está en tu trabajo docente</h1>
+            <p>Mirá estas situaciones típicas de tu jornada. Arrastrá cada una a la columna que mejor la describe en tu práctica actual.</p>
+        </div>
+
+        <div class="game-area">
+            <div class="cards-container">
+                <h3>📋 Arrastrá cada situación a una columna</h3>
+                <div class="cards-grid" id="cardsContainer">
+                    <div class="card" draggable="true" data-id="1">
+                        Buscás en Google actividades para trabajar un tema específico en clase
+                    </div>
+                    <div class="card" draggable="true" data-id="2">
+                        Usás el corrector ortográfico mientras escribís un informe
+                    </div>
+                    <div class="card" draggable="true" data-id="3">
+                        Pedís a ChatGPT que te genere ideas para una secuencia didáctica
+                    </div>
+                    <div class="card" draggable="true" data-id="4">
+                        Recibís sugerencias de videos en YouTube relacionados con tu materia
+                    </div>
+                    <div class="card" draggable="true" data-id="5">
+                        Usás una plataforma que te recomienda recursos según lo que buscaste antes
+                    </div>
+                    <div class="card" draggable="true" data-id="6">
+                        Consultás un traductor automático para un texto en otro idioma
+                    </div>
+                    <div class="card" draggable="true" data-id="7">
+                        Subís fotos de trabajos de estudiantes y pedís retroalimentación a una IA
+                    </div>
+                    <div class="card" draggable="true" data-id="8">
+                        Tu correo sugiere respuestas automáticas a mensajes de familias
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns-container">
+                <div class="drop-zone" data-zone="uso">
+                    <h3>✅ Ya lo uso<br>(aunque no lo pensaba como IA)</h3>
+                </div>
+                <div class="drop-zone" data-zone="explorando">
+                    <h3>🔍 Lo estoy explorando</h3>
+                </div>
+                <div class="drop-zone" data-zone="no-uso">
+                    <h3>❌ No lo uso / No sabía que era IA</h3>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn" id="verMapaBtn">Ver mi mapa de IA</button>
+            </div>
+
+            <div class="result" id="result">
+                <h2>Tu mapa de IA en la práctica docente</h2>
+                <div class="result-summary" id="summary"></div>
+                <p><strong>Todas estas situaciones involucran IA.</strong> Algunas son tan cotidianas que ya no las registramos como "tecnología de punta". Otras son más recientes y todavía estamos explorando cómo incorporarlas.</p>
+                <p>Lo importante es reconocer que <strong>la IA ya está mediando decisiones en tu práctica docente:</strong> qué recursos encontrás, qué propuestas didácticas considerás, cómo te comunicás, qué información priorizás.</p>
+                <p>En este curso exploraremos cómo la IA actúa como agente en diferentes esferas de la vida, y pensaremos juntos estrategias para trabajar esto pedagógicamente con tus estudiantes.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const feedbacks = {
+            '1': 'La IA de Google ordena esos resultados según "relevancia". No ves todas las opciones: ves lo que el algoritmo decidió mostrarte primero.',
+            '2': 'El corrector usa IA para predecir errores y sugerir correcciones basándose en patrones de lenguaje.',
+            '3': 'ChatGPT genera propuestas usando modelos de lenguaje entrenados con millones de textos. Es IA generativa en acción.',
+            '4': 'YouTube usa IA para analizar qué videos miraste y recomendar contenido similar. El algoritmo decide qué aparece en tu feed.',
+            '5': 'Estas plataformas usan IA para construir un perfil de tus intereses y personalizar las recomendaciones.',
+            '6': 'Los traductores automáticos (Google Translate, DeepL) usan IA para interpretar contexto y generar traducciones.',
+            '7': 'Herramientas como ChatGPT o sistemas especializados usan IA para analizar trabajos y generar feedback.',
+            '8': 'Gmail y otros correos usan IA para predecir respuestas según el contenido del mensaje que recibiste.'
+        };
+
+        let draggedElement = null;
+        let droppedCards = { uso: [], explorando: [], 'no-uso': [] };
+
+        // Setup drag events para las tarjetas
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+        });
+
+        // Setup drop zones
+        const dropZones = document.querySelectorAll('.drop-zone');
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', handleDragOver);
+            zone.addEventListener('drop', handleDrop);
+            zone.addEventListener('dragleave', handleDragLeave);
+        });
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            this.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            this.classList.remove('drag-over');
+
+            if (draggedElement) {
+                const cardId = draggedElement.getAttribute('data-id');
+                const cardText = draggedElement.textContent.trim();
+                const zoneName = this.getAttribute('data-zone');
+
+                // Crear tarjeta dropeada
+                const droppedCard = document.createElement('div');
+                droppedCard.className = 'dropped-card';
+                droppedCard.textContent = cardText;
+
+                // Crear feedback
+                const feedback = document.createElement('div');
+                feedback.className = 'feedback show';
+                feedback.textContent = feedbacks[cardId];
+
+                // Agregar al drop zone
+                this.appendChild(droppedCard);
+                this.appendChild(feedback);
+
+                // Remover tarjeta original
+                draggedElement.remove();
+
+                // Guardar en registro
+                droppedCards[zoneName].push(cardText);
+
+                // Verificar si todas las tarjetas fueron dropeadas
+                checkCompletion();
+            }
+
+            return false;
+        }
+
+        function checkCompletion() {
+            const totalDropped = droppedCards.uso.length + droppedCards.explorando.length + droppedCards['no-uso'].length;
+            if (totalDropped === 8) {
+                document.getElementById('verMapaBtn').classList.add('show');
+            }
+        }
+
+        document.getElementById('verMapaBtn').addEventListener('click', function() {
+            const summary = document.getElementById('summary');
+            let html = '<h3>Distribuiste las situaciones así:</h3><ul>';
+            
+            if (droppedCards.uso.length > 0) {
+                html += `<li><strong>✅ Ya lo uso:</strong> ${droppedCards.uso.length} situación(es)</li>`;
+            }
+            if (droppedCards.explorando.length > 0) {
+                html += `<li><strong>🔍 Lo estoy explorando:</strong> ${droppedCards.explorando.length} situación(es)</li>`;
+            }
+            if (droppedCards['no-uso'].length > 0) {
+                html += `<li><strong>❌ No lo uso / No sabía que era IA:</strong> ${droppedCards['no-uso'].length} situación(es)</li>`;
+            }
+            
+            html += '</ul>';
+            summary.innerHTML = html;
+
+            document.getElementById('result').classList.add('show');
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
